@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "http://shop-demo-env-env.eba-uic3gm2z.ap-southeast-2.elasticbeanstalk.com/api/$1"
+      "destination": "https://shop-demo-env-env.eba-uic3gm2z.ap-southeast-2.elasticbeanstalk.com/api/$1"
     }
   ]
 }
