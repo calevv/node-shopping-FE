@@ -21,7 +21,16 @@ export const loginWithEmail = createAsyncThunk(
 
 export const loginWithGoogle = createAsyncThunk('user/loginWithGoogle', async (token, { rejectWithValue }) => {});
 
-export const logout = () => (dispatch) => {};
+export const logout = () => (dispatch) => {
+    sessionStorage.removeItem('token');
+    dispatch(logoutSuccess());
+    dispatch(
+        showToastMessage({
+            message: '로그아웃 되었습니다.',
+            status: 'success',
+        })
+    );
+};
 
 export const registerUser = createAsyncThunk(
     'user/registerUser',
@@ -48,7 +57,14 @@ export const registerUser = createAsyncThunk(
     }
 );
 
-export const loginWithToken = createAsyncThunk('user/loginWithToken', async (_, { rejectWithValue }) => {});
+export const loginWithToken = createAsyncThunk('user/loginWithToken', async (_, { rejectWithValue }) => {
+    try {
+        const res = await api.get('/user/me');
+        return res.data;
+    } catch (err) {
+        return rejectWithValue(err.error);
+    }
+});
 
 const userSlice = createSlice({
     name: 'user',
@@ -64,6 +80,9 @@ const userSlice = createSlice({
             state.loginError = null;
             state.registrationError = null;
         },
+        logoutSuccess: (state) => {
+            state.user = null;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -77,6 +96,7 @@ const userSlice = createSlice({
             .addCase(registerUser.rejected, (state, action) => {
                 state.registrationError = action.payload;
             })
+            //loginWithEmail
             .addCase(loginWithEmail.pending, (state) => {
                 state.loading = true;
             })
@@ -87,8 +107,12 @@ const userSlice = createSlice({
             })
             .addCase(loginWithEmail.rejected, (state, action) => {
                 state.loginError = action.payload;
+            })
+            //loginWithToken
+            .addCase(loginWithToken.fulfilled, (state, action) => {
+                state.user = action.payload.user;
             });
     },
 });
-export const { clearErrors } = userSlice.actions;
+export const { clearErrors, logoutSuccess } = userSlice.actions;
 export default userSlice.reducer;
