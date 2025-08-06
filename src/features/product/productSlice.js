@@ -12,7 +12,7 @@ export const getProductList = createAsyncThunk(
         throw new Error(res.error);
       }
       console.log("res", res);
-      return res.data.data;
+      return res.data;
     } catch (err) {
       return rejectWithValue(err.error);
     }
@@ -96,8 +96,9 @@ const productSlice = createSlice({
       })
       .addCase(getProductList.fulfilled, (state, action) => {
         state.loading = false;
-        state.productList = action.payload;
+        state.productList = action.payload.data;
         state.error = "";
+        state.totalPageNum = action.payload.totalPageNum;
       })
       .addCase(getProductList.rejected, (state, action) => {
         state.loading = false;
