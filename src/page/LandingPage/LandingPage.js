@@ -4,11 +4,12 @@ import { Row, Col, Container } from "react-bootstrap";
 import { useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getProductList } from "../../features/product/productSlice";
+import { FadeLoader } from "react-spinners";
 
 const LandingPage = () => {
   const dispatch = useDispatch();
 
-  const productList = useSelector((state) => state.product.productList);
+  const { productList, loading } = useSelector((state) => state.product);
   const [query] = useSearchParams();
   const name = query.get("name");
   useEffect(() => {
@@ -18,6 +19,17 @@ const LandingPage = () => {
       })
     );
   }, [query]);
+
+  if (loading) {
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center p-2  "
+        style={{ height: "300px" }}
+      >
+        <FadeLoader loading={loading} />
+      </div>
+    );
+  }
 
   return (
     <Container>
