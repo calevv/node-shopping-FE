@@ -35,14 +35,6 @@ const NewItemDialog = ({ mode, showDialog, setShowDialog, searchQuery }) => {
   const [stockError, setStockError] = useState(false);
 
   useEffect(() => {
-    if (success) {
-      setShowDialog(false);
-      dispatch(getProductList(searchQuery));
-      dispatch(clearSuccess());
-    }
-  }, [success]);
-
-  useEffect(() => {
     if (error || !success) {
       dispatch(clearError());
     }
@@ -86,6 +78,9 @@ const NewItemDialog = ({ mode, showDialog, setShowDialog, searchQuery }) => {
       dispatch(createProduct({ ...formData, stock: totalStock }));
     } else {
       // 상품 수정하기
+      dispatch(
+        editProduct({ ...formData, stock: totalStock, id: selectedProduct._id })
+      );
     }
   };
 

@@ -10,13 +10,16 @@ import {
   getProductList,
   deleteProduct,
   setSelectedProduct,
+  clearSuccess,
 } from "../../features/product/productSlice";
 
 const AdminProductPage = () => {
   const navigate = useNavigate();
   const [query] = useSearchParams();
   const dispatch = useDispatch();
-  const { productList, totalPageNum } = useSelector((state) => state.product);
+  const { productList, totalPageNum, success } = useSelector(
+    (state) => state.product
+  );
   const [showDialog, setShowDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState({
     page: query.get("page") || 1,
@@ -42,6 +45,14 @@ const AdminProductPage = () => {
   }, [query]);
 
   useEffect(() => {
+    if (success) {
+      setShowDialog(false);
+      dispatch(getProductList(searchQuery));
+      dispatch(clearSuccess());
+      dispatch(setSelectedProduct(null));
+    }
+  }, [success]);
+  useEffect(() => {
     //검색어나 페이지가 바뀌면 url바꿔주기 (검색어또는 페이지가 바뀜 => url 바꿔줌=> url쿼리 읽어옴=> 이 쿼리값 맞춰서  상품리스트 가져오기)
     if (searchQuery === "") {
       delete searchQuery.name;
@@ -53,11 +64,15 @@ const AdminProductPage = () => {
 
   const deleteItem = (id) => {
     //아이템 삭제하가ㅣ
+    dispatch(deleteProduct(id));
   };
 
   const openEditForm = (product) => {
     //edit모드로 설정하고
+    setMode("edit");
     // 아이템 수정다이얼로그 열어주기
+    dispatch(setSelectedProduct(product));
+    setShowDialog(true);
   };
 
   const handleClickNewItem = () => {

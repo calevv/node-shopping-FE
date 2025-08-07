@@ -14,7 +14,21 @@ const initialState = {
 // Async thunk actions
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
-  async ({ id, size }, { rejectWithValue, dispatch }) => {}
+  async ({ id, size }, { rejectWithValue, dispatch }) => {
+    try {
+      const res = await api.post("/", { productId: id, size, qty: 1 });
+      if (res.status !== 200) {
+        throw new Error(res.error);
+      }
+      dispatch(
+        showToastMessage({ message: "상품추가완료", status: "success" })
+      );
+      return res.data.data;
+    } catch (err) {
+      dispatch(showToastMessage({ message: "상품추가실패", status: "error" }));
+      return rejectWithValue(err.error);
+    }
+  }
 );
 
 export const getCartList = createAsyncThunk(
@@ -46,7 +60,20 @@ const cartSlice = createSlice({
     },
     // You can still add reducers here for non-async actions if necessary
   },
-  extraReducers: (builder) => {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(addToCart.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(addToCart.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = "";
+      })
+      .addCase(addToCart.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+  },
 });
 
 export default cartSlice.reducer;
