@@ -16,14 +16,14 @@ export const addToCart = createAsyncThunk(
   "cart/addToCart",
   async ({ id, size }, { rejectWithValue, dispatch }) => {
     try {
-      const res = await api.post("/", { productId: id, size, qty: 1 });
+      const res = await api.post("/cart", { productId: id, size, qty: 1 });
       if (res.status !== 200) {
         throw new Error(res.error);
       }
       dispatch(
-        showToastMessage({ message: "상품추가완료", status: "success" })
+        showToastMessage({ message: res.data.message, status: "success" })
       );
-      return res.data.data;
+      return res.data.cartItemQty;
     } catch (err) {
       dispatch(showToastMessage({ message: "상품추가실패", status: "error" }));
       return rejectWithValue(err.error);
@@ -33,12 +33,35 @@ export const addToCart = createAsyncThunk(
 
 export const getCartList = createAsyncThunk(
   "cart/getCartList",
-  async (_, { rejectWithValue, dispatch }) => {}
+  async (_, { rejectWithValue, dispatch }) => {
+    try {
+      const res = await api.get("/cart");
+      if (res.status !== 200) {
+        throw new Error(res.error);
+      }
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(err.error);
+    }
+  }
 );
 
 export const deleteCartItem = createAsyncThunk(
   "cart/deleteCartItem",
-  async (id, { rejectWithValue, dispatch }) => {}
+  async (id, { rejectWithValue, dispatch }) => {
+    try {
+      const res = await api.delete(`/cart/${id}`);
+      if (res.status !== 200) throw new Error(res.error);
+
+      dispatch(getCartList());
+      dispatch(
+        showToastMessage({ message: "상품을 삭제했습니다.", status: "success" })
+      );
+      return res.data.cartItemQty;
+    } catch (err) {
+      return rejectWithValue(err.error);
+    }
+  }
 );
 
 export const updateQty = createAsyncThunk(
@@ -68,8 +91,43 @@ const cartSlice = createSlice({
       .addCase(addToCart.fulfilled, (state, action) => {
         state.loading = false;
         state.error = "";
+        state.cartItemCount = action.payload;
       })
       .addCase(addToCart.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(getCartList.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(getCartList.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = "";
+        state.cartList = action.payload;
+
+        state.totalPrice = action.payload.reduce(
+          (total, item) => total + item.productId.price * item.qty,
+          0
+        );
+      })
+      .addCase(getCartList.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteCartItem.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(deleteCartItem.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = "";
+        state.cartList = action.payload;
+
+        state.totalPrice = action.payload.reduce(
+          (total, item) => total + item.productId.price * item.qty,
+          0
+        );
+      })
+      .addCase(deleteCartItem.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
