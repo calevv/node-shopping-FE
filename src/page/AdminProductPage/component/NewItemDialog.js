@@ -39,6 +39,7 @@ const NewItemDialog = ({ mode, showDialog, setShowDialog, searchQuery }) => {
       dispatch(clearError());
     }
     if (showDialog) {
+      setStockError(false);
       if (mode === "edit") {
         setFormData(selectedProduct);
         // 객체형태로 온 stock을  다시 배열로 세팅해주기
@@ -54,11 +55,18 @@ const NewItemDialog = ({ mode, showDialog, setShowDialog, searchQuery }) => {
     }
   }, [showDialog]);
 
+  useEffect(() => {
+    if (stock.length > 0) {
+      setStockError(false);
+    }
+  }, [stock]);
+
   const handleClose = () => {
     //모든걸 초기화시키고;
     // 다이얼로그 닫아주기
     dispatch(clearError());
     dispatch(clearSuccess());
+    setStockError(false);
     setStock([]);
     setFormData({ ...InitialFormData });
     setShowDialog(false);
@@ -242,7 +250,7 @@ const NewItemDialog = ({ mode, showDialog, setShowDialog, searchQuery }) => {
                     size="sm"
                     onClick={() => deleteStock(index)}
                   >
-                    -
+                    X
                   </Button>
                 </Col>
               </Row>
