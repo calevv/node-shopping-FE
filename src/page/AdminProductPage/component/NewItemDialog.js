@@ -241,6 +241,7 @@ const NewItemDialog = ({ mode, showDialog, setShowDialog, searchQuery }) => {
                     type="number"
                     placeholder="number of stock"
                     value={item[1]}
+                    min="1"
                     required
                   />
                 </Col>
